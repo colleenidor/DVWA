@@ -23,27 +23,20 @@ if( !array_key_exists( $selectedDocId, $docs ) ) {
 }
 $readFile = $docs[ $selectedDocId ][ 'file' ];
 
-$instructions = file_get_contents( DVWA_WEB_PAGE_TO_ROOT.$readFile );
+$fullPath = realpath(DVWA_WEB_PAGE_TO_ROOT . $readFile);
+$baseDir = realpath(DVWA_WEB_PAGE_TO_ROOT);
+
+if ($fullPath && strpos($fullPath, $baseDir) === 0 && file_exists($fullPath)) {
+	$instructions = file_get_contents($fullPath);
+} else {
+	$instructions = 'Error: Invalid file path';
+}
 
 if ($docs[ $selectedDocId ]['type'] == "markdown") {
 	$parsedown = new ParseDown();
 	$instructions = $parsedown->text($instructions);
 }
 
-/*
-function urlReplace( $matches ) {
-	return dvwaExternalLinkUrlGet( $matches[1] );
-}
-
-// Make links and obfuscate the referer...
-$instructions = preg_replace_callback(
-	'/((http|https|ftp):\/\/([[:alnum:]|.|\/|?|=]+))/',
-	'urlReplace',
-	$instructions
-);
-
-$instructions = nl2br( $instructions );
-*/
 $docMenuHtml = '';
 foreach( array_keys( $docs ) as $docId ) {
 	$selectedClass = ( $docId == $selectedDocId ) ? ' selected' : '';
